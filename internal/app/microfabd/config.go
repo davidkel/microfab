@@ -78,7 +78,7 @@ func DefaultConfig() (*Config, error) {
 			},
 		},
 		CapabilityLevel:        "V2_0",
-		CouchDB:                true,
+		CouchDB:                false, // DAVE: Disable requiring CouchDB by default for now
 		CertificateAuthorities: true,
 		TimeoutString:          "30s",
 		TLS: TLS{

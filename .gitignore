@@ -25,3 +25,8 @@
 /builders/java/.project
 /builders/java/.settings
 /builders/java/target
+
+test-env
+*.tar.gz
+*.old
+*.bak

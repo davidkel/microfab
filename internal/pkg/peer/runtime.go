@@ -228,6 +228,16 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 	if !ok {
 		return fmt.Errorf("core.yaml missing ledger section")
 	}
+
+	// DAVE: Added support for snapshots
+	// needs latest peer binaries if non unix path given
+	snapshots, ok := ledger["snapshots"].(map[interface{}]interface{})
+	if !ok {
+		return fmt.Errorf("core.yaml missing ledger.snapshots section")
+	}
+	// delete(ledger, "snapshots")
+	snapshots["rootDir"] = path.Join(dataDirectory, "snapshots")
+
 	state, ok := ledger["state"].(map[interface{}]interface{})
 	if !ok {
 		return fmt.Errorf("core.yaml missing ledger.state section")

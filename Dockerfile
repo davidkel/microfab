@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
-ADD docker/bintray-apache-couchdb-rpm.repo /etc/yum.repos.d/bintray-apache-couchdb-rpm.repo
+# ADD docker/bintray-apache-couchdb-rpm.repo /etc/yum.repos.d/bintray-apache-couchdb-rpm.repo
+RUN microdnf install yum-utils && yum-config-manager --add-repo https://couchdb.apache.org/repo/couchdb.repo
+
 RUN microdnf install couchdb findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
     && groupadd -g 7051 ibp-user \
     && useradd -u 7051 -g ibp-user -G root -s /bin/bash ibp-user \
@@ -39,15 +41,20 @@ RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradl
     && mv /opt/apache-maven-3.6.3 /opt/maven
 ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
-RUN mkdir -p /opt/fabric \
-    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.2.2/hyperledger-fabric-linux-amd64-2.2.2.tar.gz | tar xzf - -C /opt/fabric  \
-    && curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.4.9/hyperledger-fabric-ca-linux-amd64-1.4.9.tar.gz | tar xzf - -C /opt/fabric  \
+RUN mkdir -p /opt/fabric
+ADD ./hyperledger-fabric-linux-amd64-latest.tar.gz /opt/fabric
+# RUN mkdir -p /opt/fabric \
+#    && curl -sSL https://hyperledger-fabric.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-latest.tar.gz | tar xzf - -C /opt/fabric  \
+#    && tar -C /opt/fabric -xzf /opt/hyperledger-fabric-linux-amd64-latest.tar.gz   \
+#    && curl -sSL https://hyperledger-fabric.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-latest.tar.gz \
+RUN curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | tar xzf - -C /opt/fabric  \
     && cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
     && npm install --unsafe-perm -g fabric-shim@2.2.0 \
     && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
 ENV FABRIC_CFG_PATH=/opt/fabric/config
 ENV PATH=/opt/fabric/bin:${PATH}
+RUN mkdir /var/hyperledger && chmod 777 /var/hyperledger
 
 FROM base AS builder
 ADD . /tmp/microfab
@@ -67,3 +74,4 @@ EXPOSE 8080
 USER 7051
 VOLUME /opt/microfab/data
 ENTRYPOINT [ "/tini", "--", "/docker-entrypoint.sh" ]
+# RUN mkdir /var/hyperledger && chmod 777 /var/hyperledger

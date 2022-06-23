@@ -1,6 +1,6 @@
 [bintray--apache-couchdb-rpm]
 name=bintray--apache-couchdb-rpm
-baseurl=http://apache.bintray.com/couchdb-rpm/el8/$basearch/
+baseurl=https://couchdb.apache.org/repo/couchdb.repo
 gpgcheck=0
 repo_gpgcheck=0
 enabled=1
